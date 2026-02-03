@@ -1,11 +1,19 @@
 "use client";
 
-import { User } from "@supabase/supabase-js";
-import { SignOutButton } from "@/app/dashboard/sign-out-button";
+// import { User } from "@supabase/supabase-js";
+// import { SignOutButton } from "@/app/dashboard/sign-out-button";
 
-interface HeaderProps {
-  user: User;
-}
+// TODO: Re-enable auth when ready to set up OAuth
+type HeaderProps = {
+  user: {
+    id: string;
+    email?: string;
+    user_metadata?: {
+      full_name?: string;
+      avatar_url?: string;
+    };
+  };
+};
 
 export function Header({ user }: HeaderProps) {
   return (
@@ -110,7 +118,8 @@ export function Header({ user }: HeaderProps) {
             </span>
           </div>
 
-          <SignOutButton />
+          {/* TODO: Re-enable auth when ready to set up OAuth */}
+          {/* <SignOutButton /> */}
         </div>
       </div>
     </header>

@@ -1,18 +1,27 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+// import { createClient } from "@/lib/supabase/client";
 
 export default function Home() {
-  const supabase = createClient();
+  const router = useRouter();
+  // const supabase = createClient();
 
-  const handleGoogleSignIn = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-  };
+  // TODO: Re-enable auth when ready to set up OAuth
+  // const handleGoogleSignIn = async () => {
+  //   await supabase.auth.signInWithOAuth({
+  //     provider: "google",
+  //     options: {
+  //       redirectTo: `${window.location.origin}/auth/callback`,
+  //     },
+  //   });
+  // };
+
+  // For local development, auto-redirect to dashboard
+  useEffect(() => {
+    router.push("/dashboard");
+  }, [router]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 px-4 dark:bg-black">
@@ -22,10 +31,11 @@ export default function Home() {
             Personal Finance
           </h1>
           <p className="text-zinc-600 dark:text-zinc-400">
-            Track your finances and manage your budget
+            Redirecting to dashboard...
           </p>
         </div>
 
+        {/* TODO: Re-enable auth when ready to set up OAuth
         <div className="w-full space-y-4">
           <button
             onClick={handleGoogleSignIn}
@@ -56,6 +66,7 @@ export default function Home() {
         <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
           By continuing, you agree to our Terms of Service and Privacy Policy
         </p>
+        */}
       </main>
     </div>
   );
