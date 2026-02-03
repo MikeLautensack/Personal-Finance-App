@@ -1,7 +1,12 @@
-import { createServerClient } from "@supabase/ssr";
+// TODO: Re-enable auth when ready to set up OAuth
+// import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
+  // For local development, skip all auth checks
+  return NextResponse.next({ request });
+
+  /* TODO: Re-enable auth when ready to set up OAuth
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -48,6 +53,7 @@ export async function proxy(request: NextRequest) {
   }
 
   return supabaseResponse;
+  */
 }
 
 export const config = {
