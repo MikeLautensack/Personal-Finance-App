@@ -2,6 +2,7 @@
 // import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/sidebar";
 import { Header } from "@/components/header";
+import { QueryProvider } from "@/components/query-provider";
 
 // TODO: Re-enable auth when ready to set up OAuth
 // Mock user for local development
@@ -34,11 +35,13 @@ export default async function DashboardLayout({
       <Sidebar />
       <div className="lg:pl-64">
         <Header user={user} />
-        <main className="py-8">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            {children}
-          </div>
-        </main>
+        <QueryProvider>
+          <main className="py-8">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              {children}
+            </div>
+          </main>
+        </QueryProvider>
       </div>
     </div>
   );

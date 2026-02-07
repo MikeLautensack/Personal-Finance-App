@@ -6,12 +6,7 @@ export async function getBudgets(): Promise<Budget[]> {
 
   const { data, error } = await supabase
     .from("budgets")
-    .select(
-      `
-      *,
-      category:categories(*)
-    `
-    )
+    .select("*")
     .eq("user_id", userId);
 
   if (error) {
@@ -27,12 +22,7 @@ export async function getBudgetById(id: string): Promise<Budget | null> {
 
   const { data, error } = await supabase
     .from("budgets")
-    .select(
-      `
-      *,
-      category:categories(*)
-    `
-    )
+    .select("*")
     .eq("id", id)
     .eq("user_id", userId)
     .single();

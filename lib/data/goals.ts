@@ -6,12 +6,7 @@ export async function getGoals(): Promise<Goal[]> {
 
   const { data, error } = await supabase
     .from("goals")
-    .select(
-      `
-      *,
-      account:accounts(*)
-    `
-    )
+    .select("*")
     .eq("user_id", userId);
 
   if (error) {
@@ -27,12 +22,7 @@ export async function getGoalById(id: string): Promise<Goal | null> {
 
   const { data, error } = await supabase
     .from("goals")
-    .select(
-      `
-      *,
-      account:accounts(*)
-    `
-    )
+    .select("*")
     .eq("id", id)
     .eq("user_id", userId)
     .single();
