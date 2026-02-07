@@ -1,14 +1,14 @@
 import {
-  getTransactions,
   getTransactionSummary,
   getAccounts,
   getCategories,
 } from "@/lib/data";
 import { TransactionSearchParams } from "@/lib/types";
 import { TransactionFilters } from "./_components/transaction-filters";
-import { TransactionList } from "./_components/transaction-list";
 import { TransactionSummaryCards } from "./_components/transaction-summary";
+import { InfiniteTransactionList } from "./_components/infinite-transaction-list";
 import { AddTransactionButton } from "./_components/add-transaction-button";
+import { ImportCSVButton } from "./_components/import-csv-button";
 
 type PageProps = {
   searchParams: Promise<{
@@ -36,9 +36,8 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
     order: (params.order as "asc" | "desc") || "desc",
   };
 
-  // Fetch data in parallel
-  const [transactions, summary, accounts, categories] = await Promise.all([
-    getTransactions(queryParams),
+  // Fetch static data server-side (summary, accounts, categories)
+  const [summary, accounts, categories] = await Promise.all([
     getTransactionSummary(queryParams.month),
     getAccounts(),
     getCategories(),
@@ -55,7 +54,10 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
             Track your income, expenses, and transfers
           </p>
         </div>
-        <AddTransactionButton accounts={accounts} categories={categories} />
+        <div className="flex gap-3">
+          <ImportCSVButton accounts={accounts} />
+          <AddTransactionButton accounts={accounts} categories={categories} />
+        </div>
       </div>
 
       {/* Filters */}
@@ -69,11 +71,11 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
       {/* Summary */}
       <TransactionSummaryCards summary={summary} />
 
-      {/* Transaction List */}
-      <TransactionList
-        transactions={transactions}
+      {/* Transaction List - Client-side with infinite scroll */}
+      <InfiniteTransactionList
         accounts={accounts}
         categories={categories}
+        defaultMonth={queryParams.month || new Date().toISOString().slice(0, 7)}
       />
 
       {/* Mobile spacing */}

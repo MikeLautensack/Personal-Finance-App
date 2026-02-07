@@ -312,6 +312,16 @@ export type CategorySearchParams = {
 };
 
 // ============================================
+// Paginated Response Types
+// ============================================
+
+export type PaginatedResponse<T> = {
+  data: T[];
+  nextCursor: number | null;
+  total: number;
+};
+
+// ============================================
 // Summary/Aggregate Types
 // ============================================
 

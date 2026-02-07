@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTransactions, createTransaction } from "@/lib/data";
+import {
+  getTransactions,
+  getTransactionsPaginated,
+  createTransaction,
+} from "@/lib/data";
 import { CreateTransactionInput, TransactionSearchParams } from "@/lib/types";
 
-// GET /api/transactions - List transactions with filtering
+// GET /api/transactions - List transactions with filtering and optional pagination
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -19,6 +23,19 @@ export async function GET(request: NextRequest) {
       order: (searchParams.get("order") as "asc" | "desc") || undefined,
     };
 
+    // If cursor param is present, use paginated response
+    const cursorParam = searchParams.get("cursor");
+    const limitParam = searchParams.get("limit");
+
+    if (cursorParam !== null || limitParam !== null) {
+      const cursor = cursorParam ? parseInt(cursorParam, 10) : 0;
+      const limit = limitParam ? parseInt(limitParam, 10) : 30;
+
+      const result = await getTransactionsPaginated(params, cursor, limit);
+      return NextResponse.json(result);
+    }
+
+    // Default: return all transactions (backwards compatible)
     const transactions = await getTransactions(params);
     return NextResponse.json(transactions);
   } catch (error) {

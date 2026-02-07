@@ -18,6 +18,7 @@ export {
 
 export {
   getTransactions,
+  getTransactionsPaginated,
   getTransactionById,
   getTransactionSummary,
   createTransaction,

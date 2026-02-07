@@ -2,28 +2,18 @@ import {
   Transaction,
   TransactionSearchParams,
   TransactionSummary,
+  PaginatedResponse,
   CreateTransactionInput,
   UpdateTransactionInput,
 } from "@/lib/types";
 import { getSupabaseClient } from "./utils";
 
-export async function getTransactions(
+const DEFAULT_PAGE_SIZE = 30;
+
+function applyTransactionFilters(
+  query: ReturnType<ReturnType<typeof Object>["from"]>,
   params?: TransactionSearchParams
-): Promise<Transaction[]> {
-  const { client: supabase, userId } = await getSupabaseClient();
-
-  let query = supabase
-    .from("transactions")
-    .select(
-      `
-      *,
-      account:accounts!transactions_account_id_fkey(*),
-      category:categories(*),
-      transfer_account:accounts!transactions_transfer_account_id_fkey(*)
-    `
-    )
-    .eq("user_id", userId);
-
+) {
   // Filter by type
   if (params?.type && params.type !== "all") {
     query = query.eq("type", params.type);
@@ -54,6 +44,21 @@ export async function getTransactions(
     );
   }
 
+  return query;
+}
+
+export async function getTransactions(
+  params?: TransactionSearchParams
+): Promise<Transaction[]> {
+  const { client: supabase, userId } = await getSupabaseClient();
+
+  let query = supabase
+    .from("transactions")
+    .select("*")
+    .eq("user_id", userId);
+
+  query = applyTransactionFilters(query, params);
+
   // Sort
   const sortField = params?.sort || "date";
   const sortOrder = params?.order || "desc";
@@ -69,6 +74,57 @@ export async function getTransactions(
   return data as Transaction[];
 }
 
+export async function getTransactionsPaginated(
+  params?: TransactionSearchParams,
+  cursor: number = 0,
+  limit: number = DEFAULT_PAGE_SIZE
+): Promise<PaginatedResponse<Transaction>> {
+  const { client: supabase, userId } = await getSupabaseClient();
+
+  // First get total count with the same filters
+  let countQuery = supabase
+    .from("transactions")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  countQuery = applyTransactionFilters(countQuery, params);
+
+  const { count } = await countQuery;
+  const total = count ?? 0;
+
+  // Then get the page of data
+  let query = supabase
+    .from("transactions")
+    .select("*")
+    .eq("user_id", userId);
+
+  query = applyTransactionFilters(query, params);
+
+  // Sort
+  const sortField = params?.sort || "date";
+  const sortOrder = params?.order || "desc";
+  query = query.order(sortField, { ascending: sortOrder === "asc" });
+
+  // Paginate
+  query = query.range(cursor, cursor + limit - 1);
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Error fetching transactions:", error);
+    return { data: [], nextCursor: null, total: 0 };
+  }
+
+  const nextOffset = cursor + limit;
+  const nextCursor = nextOffset < total ? nextOffset : null;
+
+  return {
+    data: data as Transaction[],
+    nextCursor,
+    total,
+  };
+}
+
 export async function getTransactionById(
   id: string
 ): Promise<Transaction | null> {
@@ -76,14 +132,7 @@ export async function getTransactionById(
 
   const { data, error } = await supabase
     .from("transactions")
-    .select(
-      `
-      *,
-      account:accounts!transactions_account_id_fkey(*),
-      category:categories(*),
-      transfer_account:accounts!transactions_transfer_account_id_fkey(*)
-    `
-    )
+    .select("*")
     .eq("id", id)
     .eq("user_id", userId)
     .single();
